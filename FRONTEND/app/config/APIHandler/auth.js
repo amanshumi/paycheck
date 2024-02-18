@@ -1,7 +1,7 @@
 // Function for register user
 export async function registerUser(userData) {
     try {
-      const response = await fetch('http://localhost:3000/auth/register', {
+      const response = await fetch('https://app.andreeaghelmegeanu.com/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -17,10 +17,10 @@ export async function registerUser(userData) {
     }
   }
   
-
+//Function for login user
 export async function loginUser(userData) {
     try {
-      const response = await fetch('http://localhost:3000/auth/login', {
+      const response = await fetch('https://app.andreeaghelmegeanu.com/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
