@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT
 
-//TEST AUTO DEPLOYY
+//TEST AUTO DEPLOY
 
 // Middleware to parse JSON bodies
 app.use(express.json());
