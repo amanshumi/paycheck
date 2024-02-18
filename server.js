@@ -13,7 +13,7 @@ const port = process.env.PORT
 app.use(express.json());
 
 //Middleware to use cors
-//app.use(cors());
+app.use(cors());
 
 
 // Import the routes
