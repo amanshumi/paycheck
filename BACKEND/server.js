@@ -3,12 +3,16 @@ require('dotenv').config();
 
 //APP Config
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT
 
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+//Middleware to use cors
+app.use(cors());
 
 
 // Import the routes

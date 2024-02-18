@@ -1,0 +1,26 @@
+{
+  "version": 0.1,
+  "name": "pay-pack",
+  "beta": true,
+  "defaultFlagId": 0, // later use for multi-language
+  "verticalTabletNavigation": true,
+
+  "flags": [
+    {
+      "flagId": 0,
+      "langFile": "en",
+      "flagName": "English",
+      "flagIso": "US"
+    }
+  ],
+
+  "companyWebsite": "",
+  "privacyPolicy": "",
+  "termsConditions": "",
+
+  "socials": {
+    "facebook": "",
+    "instagram": "",
+    "youtube": ""
+  }
+}
