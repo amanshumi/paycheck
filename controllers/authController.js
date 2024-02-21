@@ -144,7 +144,7 @@ exports.forgotPassword = async (req, res) => {
     });
 
     // Define the email's contents
-    const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`; // Adjust to your frontend domain
+    const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`; 
     const mailOptions = {
       from: '"PayCheck" <reset@paycheck.com>', 
       to: email, // recipient
