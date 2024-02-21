@@ -146,7 +146,7 @@ exports.forgotPassword = async (req, res) => {
     // Define the email's contents
     const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`; // Adjust to your frontend domain
     const mailOptions = {
-      from: '"YourAppName" <yourEmail@example.com>', // sender address
+      from: '"PayCheck" <reset@paycheck.com>', 
       to: email, // recipient
       subject: 'Password Reset Request', // Subject line
       text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n
