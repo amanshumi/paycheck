@@ -20,9 +20,11 @@ app.use(cors());
 // Import the routes
 const authRoutes = require('./routes/auth');
 const webhookRoute = require('./routes/webhookRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Use the imported routes with their respective base paths
 app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
 app.use(webhookRoute);
 
 
