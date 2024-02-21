@@ -4,15 +4,40 @@ const express = require('express');
 const authController = require('../controllers/authController');
 // Required Middleware
 const authenticateToken = require('../middleware/authenticateToken');
+// Import express-validator
+const { body } = require('express-validator');
 
 const router = express.Router();
 
-// Auth end-points
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+
+//Register EndPoint
+router.post('/register', [
+  body('name').not().isEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Email must be a valid email address'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+], authController.register);
+
+//Login EndPoint
+router.post('/login', [
+  body('email').isEmail().withMessage('Email must be a valid email address'),
+  body('password').not().isEmpty().withMessage('Password is required')
+], authController.login);
+
+// Forgot Password endpoint
+router.post('/forgot-password', [
+    body('email').isEmail().withMessage('Must be a valid email address')
+], authController.forgotPassword);
+
+//Change password 
+router.post('/reset-password', [
+    body('token').not().isEmpty().withMessage('Reset token is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+], authController.resetPassword);
+
+
 
 // Adding a protected route for changing password
-router.post('/change-password', authenticateToken, authController.changePassword);
+//router.post('/change-password', authenticateToken, authController.changePassword);
 
 // Forget Password (To be implemented)
 // Google Auth (To be implemented)

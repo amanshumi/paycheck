@@ -4,6 +4,7 @@ require('dotenv').config();
 //APP Config
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const port = process.env.PORT
 
@@ -23,6 +24,10 @@ const webhookRoute = require('./routes/webhookRoutes');
 // Use the imported routes with their respective base paths
 app.use('/auth', authRoutes);
 app.use(webhookRoute);
+
+
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
 
 
 app.get('/', (req, res) => {

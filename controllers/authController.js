@@ -4,19 +4,27 @@ require('dotenv').config();
 //Required  packages
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
 
 //Required models
 const { User } = require('../models');
+const { PasswordResetToken } = require('../models');
 
 // Register logic
 exports.register = async (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     // Get info from request
     const { name, email, password } = req.body;
-
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Request must include email, password, name' });
-    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -36,9 +44,9 @@ exports.register = async (req, res) => {
 
     // Generate JWT token for the new user
     const token = jwt.sign(
-      { id: newUser.id }, 
-        process.env.JWT_SECRET,
-      { expiresIn: '24h' } 
+      { id: newUser.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
     );
 
     // User object to return, excluding the password
@@ -53,36 +61,40 @@ exports.register = async (req, res) => {
 
 
 
-//LogIn Logic
+// Login logic
 exports.login = async (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    // Check if the request body is empty ||  missing fields
+    // Extract email and password from request body
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Request must include email and password' });
-    }
 
     // Find the user by email
     const user = await User.findOne({ where: { email } });
     
-    // Return not found
+    // If user not found, return an error
     if (!user) {
       return res.status(404).json({ error: 'No account associated with this email address' });
     }
     
-    // Check incomming passw 
+    // Check if the provided password matches the user's password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Password is incorrect' });
     }
     
-    // If email and password create the JWT token (De moment, doar user id -> pot adauga nume si alte detalii)
+    // Generate a JWT token for the user
     const token = jwt.sign(
       { id: user.id },
       process.env.JWT_SECRET, 
       { expiresIn: '24h' }
     );
-    //return 
+
+    // Respond with a success message and the token
     res.json({ message: 'Login successful', token });
    
   } catch (error) {
@@ -91,39 +103,111 @@ exports.login = async (req, res) => {
 };
 
 
-// Change Password Logic (trebuie expandata, mai multe check uri)
-exports.changePassword = async (req, res) => {
-  try {
-    const userId = req.user.id; 
-    const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword || !userId) {
-      return res.status(400).json({ error: 'Request must not be emmpty'});
-    }
-
-    // Find the user by ID
-    const user = await User.findByPk(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Verify current password
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
-    }
-
-    // Hash new password
-    const hashedNewPassword = await bcrypt.hash(newPassword, 8);
-
-    // Update user's password
-    await user.update({ password: hashedNewPassword });
-
-    res.json({ message: 'Password updated successfully' });
-  } catch (error) {
-    res.status(500).send(error);
+//Forgot Password logic
+exports.forgotPassword = async (req, res) => {
+  // Check for validation errors from the request
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
+
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    // Consider not revealing whether the email exists for privacy/security
+    if (!user) {
+      return res.status(200).json({ message: 'If an account with that email exists, we have sent a password reset email.' });
+    }
+
+    // Generate a password reset token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    // Token expiration time, e.g., 1 hour from now
+    const expireTime = new Date(Date.now() + 3600000);
+
+    // Create a password reset token entry
+    await PasswordResetToken.create({
+      userId: user.id,
+      token: resetToken,
+      expires: expireTime,
+    });
+
+    // Setup email transporter using nodemailer
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.example.com', // Replace with your mail server details
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: 'yourEmail@example.com', // Replace with your SMTP email
+        pass: 'yourEmailPassword', // Replace with your SMTP password
+      },
+    });
+
+    // Define the email's contents
+    const resetUrl = `http://yourfrontenddomain.com/reset-password/${resetToken}`; // Adjust to your frontend domain
+    const mailOptions = {
+      from: '"YourAppName" <yourEmail@example.com>', // sender address
+      to: email, // recipient
+      subject: 'Password Reset Request', // Subject line
+      text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n
+        Please click on the following link, or paste it into your browser to complete the process within one hour of receiving it:\n\n
+        ${resetUrl}\n\n
+        If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Send Mail error: ', error);
+        return res.status(500).json({ error: 'Error sending email' });
+      } else {
+        console.log('Email sent: ' + info.response);
+        return res.status(200).json({ message: 'Email sent successfully: ' + info.response });
+      }
+    });
+  } catch (error) {
+    console.error('Forgot Password error: ', error);
+    res.status(500).send({ error: 'An error occurred while processing your request.' });
+  }
+};
+
+
+// Change Password Logic (trebuie expandata, mai multe check uri)
+exports.resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { token, newPassword } = req.body;
+
+  try {
+      // Find the token in the database
+      const passwordResetToken = await PasswordResetToken.findOne({ where: { token } });
+      if (!passwordResetToken || passwordResetToken.expires < Date.now()) {
+          return res.status(400).json({ error: 'Token is invalid or has expired.' });
+      }
+
+      // Find the user associated with the reset token
+      const user = await User.findByPk(passwordResetToken.userId);
+      if (!user) {
+          return res.status(404).json({ error: 'User not found.' });
+      }
+
+      // Hash the new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 8);
+
+      // Update the user's password
+      await user.update({ password: hashedNewPassword });
+
+      // Optionally, delete the reset token from the database to prevent reuse
+      await PasswordResetToken.destroy({ where: { id: passwordResetToken.id } });
+
+      res.json({ message: 'Password has been updated successfully.' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error:'An error occurred while trying to reset the password.' });
+    }
 };
 
 
