@@ -28,6 +28,10 @@ app.use('/user', userRoutes);
 app.use(webhookRoute);
 
 
+app.get('/reset-password/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+});
+
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
