@@ -134,17 +134,17 @@ exports.forgotPassword = async (req, res) => {
 
     // Setup email transporter using nodemailer
     const transporter = nodemailer.createTransport({
-      host: 'smtp.example.com', // Replace with your mail server details
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      host: 'app.andreeaghelmegeanu.com', 
+      port: 465,
+      secure: true, 
       auth: {
-        user: 'yourEmail@example.com', // Replace with your SMTP email
-        pass: 'yourEmailPassword', // Replace with your SMTP password
+        user: 'paycheck@app.andreeaghelmegeanu.com', 
+        pass: 'Anaaremeremulte!1', 
       },
     });
 
     // Define the email's contents
-    const resetUrl = `http://yourfrontenddomain.com/reset-password/${resetToken}`; // Adjust to your frontend domain
+    const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`; // Adjust to your frontend domain
     const mailOptions = {
       from: '"YourAppName" <yourEmail@example.com>', // sender address
       to: email, // recipient
