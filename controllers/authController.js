@@ -172,7 +172,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 
-// Change Password Logic (trebuie expandata, mai multe check uri)
+// Change Password Logic 
 exports.resetPassword = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
