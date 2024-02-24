@@ -5,11 +5,28 @@ module.exports = (sequelize) => {
   class User extends Model {
     // Associations
     static associate(models) {
+
+      //VerificationToken
       User.hasMany(models.VerificationToken, {
         foreignKey: 'userId',
         as: 'verificationTokens',
         onDelete: 'CASCADE',
       });
+
+      //GroupMember
+      User.hasMany(models.GroupMember, {
+        foreignKey: 'userId',
+        as: 'memberships',
+        onDelete: 'CASCADE',
+      });
+
+       // Direct to Groups as the creator
+       User.hasMany(models.Group, {
+        foreignKey: 'createdByUserId',
+        as: 'createdGroups',
+        onDelete: 'SET NULL',
+      });
+
     }
   };
   User.init({
@@ -47,12 +64,12 @@ module.exports = (sequelize) => {
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
+      defaultValue: DataTypes.NOW,
     },
     updated_at: {
       allowNull: false,
       type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
+      defaultValue: DataTypes.NOW,
     },
     last_login: {
       type: DataTypes.DATE,

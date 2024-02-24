@@ -4,11 +4,13 @@ module.exports = (sequelize) => {
   class VerificationToken extends Model {
     //Associations
     static associate(models) {
+    
       VerificationToken.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'user',
         onDelete: 'CASCADE',
       });
+      
     }
   };
   VerificationToken.init({
