@@ -47,12 +47,12 @@ module.exports = (sequelize) => {
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,
-      defaultValue: DataTypes.literal('CURRENT_TIMESTAMP'),
+      defaultValue: Sequelize.NOW,
     },
     updated_at: {
       allowNull: false,
       type: DataTypes.DATE,
-      defaultValue: DataTypes.literal('CURRENT_TIMESTAMP'),
+      defaultValue: Sequelize.NOW,
     },
     last_login: {
       type: DataTypes.DATE,
