@@ -11,7 +11,7 @@ const crypto = require('crypto');
 
 
 //Required models
-const { User } = require('../models');
+const { User,VerificationTokens } = require('../models');
 const { PasswordResetToken } = require('../models');
 
 // Register logic
@@ -102,6 +102,7 @@ exports.login = async (req, res) => {
     res.json({ message: 'Login successful', token });
    
   } catch (error) {
+    console.log(error);
     res.status(500).send({ error: 'An error occurred while trying to log in' });
   }
 };
