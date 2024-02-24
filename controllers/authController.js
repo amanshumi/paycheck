@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
 
   try {
     // Get info from request
-    const { name, email, password } = req.body;
+    const { first_name, last_name, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -37,7 +37,8 @@ exports.register = async (req, res) => {
 
     // Create user
     const newUser = await User.create({
-      name,
+      first_name,
+      last_name,
       email,
       password: hashedPassword
     });
@@ -86,6 +87,9 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: 'Password is incorrect' });
     }
+
+    // Update the user's last login date
+    await user.update({ last_login: new Date() });
     
     // Generate a JWT token for the user
     const token = jwt.sign(
@@ -126,10 +130,11 @@ exports.forgotPassword = async (req, res) => {
     const expireTime = new Date(Date.now() + 3600000);
 
     // Create a password reset token entry
-    await PasswordResetToken.create({
+    await VerifyTokens.create({
       userId: user.id,
       token: resetToken,
-      expires: expireTime,
+      type: 'password_reset',
+      expires_at: expireTime,
     });
 
     // Setup email transporter using nodemailer

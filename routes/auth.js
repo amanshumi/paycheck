@@ -12,9 +12,10 @@ const router = express.Router();
 
 //Register EndPoint
 router.post('/register', [
-  body('name').not().isEmpty().withMessage('Name is required'),
+  body('first_name').not().isEmpty().withMessage('First name is required'),
+  body('last_name').not().isEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Email must be a valid email address'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
 ], authController.register);
 
 //Login EndPoint
