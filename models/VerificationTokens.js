@@ -41,7 +41,7 @@ module.exports = (sequelize) => {
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,
-      defaultValue: DataTypes.literal('CURRENT_TIMESTAMP'),
+      defaultValue: DataTypes.NOW,
     },
     used: {
       type: DataTypes.BOOLEAN,
