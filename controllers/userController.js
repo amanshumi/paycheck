@@ -69,7 +69,7 @@ exports.createGroup = async (req, res) => {
       createdByUserId,
     }, { transaction });
 
-    // Automatically add creator as a member of the group
+    // Automatically add creator as a member of the groups
     await GroupMember.create({
       userId: createdByUserId,
       groupId: group.id,
