@@ -11,7 +11,7 @@ const {User,Group,GroupMember} = require('../models');
 
 
 //Get group information
-exports.getGroupInfo = async (req,res) => {
+exports.getGroupsInfo = async (req,res) => {
 
     try{
         //Get the user id from token
