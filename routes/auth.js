@@ -11,7 +11,7 @@ const router = express.Router();
 
 
 //Register EndPoint
-router.post('/register', [
+router.post("/register", [
   body('first_name').not().isEmpty().withMessage('First name is required'),
   body('last_name').not().isEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Email must be a valid email address'),
