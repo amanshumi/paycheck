@@ -19,12 +19,17 @@ app.use(cors());
 
 // Import the routes
 const authRoutes = require('./routes/auth');
-const webhookRoute = require('./routes/webhookRoutes');
 const userRoutes = require('./routes/userRoutes');
+const groupRoutes = require('./routes/groupRoutes');
+
+
+//GitHub WebHook
+const webhookRoute = require('./routes/webhookRoutes');
 
 // Use the imported routes with their respective base paths
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
+app.use('/group',groupRoutes);
 app.use(webhookRoute);
 
 
