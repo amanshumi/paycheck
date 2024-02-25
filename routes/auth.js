@@ -19,7 +19,7 @@ router.post("/register", [
 ], authController.register);
 
 //Login EndPoint
-router.get('/login', [
+router.post('/login', [
   body('email').isEmail().withMessage('Email must be a valid email address'),
   body('password').not().isEmpty().withMessage('Password is required')
 ], authController.login);
