@@ -5,6 +5,8 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 
+//DB
+const { sequelize } = require('../models');
 
 //Required models
 const {User,Group,GroupMember} = require('../models');
@@ -21,10 +23,15 @@ exports.getGroupsInfo = async (req,res) => {
         const groups = await Group.findAll({
             include: [{
                 model: GroupMember,
+                as: 'members',
                 where: { userId: userId },
                 attributes: []
             }],
-            attributes: ['id', 'name', [sequelize.fn('COUNT', sequelize.col('GroupMembers.groupId')), 'numberOfMembers']],
+            attributes: [
+                'id', 
+                'name', 
+                [sequelize.fn('COUNT', sequelize.col('members.groupId')), 'numberOfMembers']
+            ],
             group: ['Group.id'],
             raw: true
         });
