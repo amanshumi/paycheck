@@ -79,7 +79,12 @@ exports.createGroup = async (req, res) => {
     // Commit the transaction
     await transaction.commit(); 
 
-    res.status(201).json({ name: group.name });
+    res.status(201).json({ 
+      name: group.name,
+      currency : group.currency,
+      //Doar unu, ca doar ce facu grupul
+      membersCount: 1, 
+    });
 
   } catch (error) {
     // Roll back the transaction in case of error
