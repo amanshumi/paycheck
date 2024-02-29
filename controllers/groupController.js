@@ -37,8 +37,7 @@ exports.getGroupsInfo = async (req,res) => {
             }],
             attributes: [
                 'id', 
-                'name', 
-                [sequelize.fn('COUNT', sequelize.col('members.groupId')), 'numberOfMembers']
+                'name'
             ],
             group: ['Group.id'],
             raw: true
@@ -47,6 +46,13 @@ exports.getGroupsInfo = async (req,res) => {
          // If no groups found, return a message
          if (!groups.length) {
             return res.status(404).json({ message: 'No groups found for this user.' });
+        }
+
+        for (let group of groups) {
+            const count = await GroupMember.count({
+                where: { groupId: group.id }
+            });
+            group.numberOfMembers = count;
         }
 
         //Return JSON
