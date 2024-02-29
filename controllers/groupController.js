@@ -87,17 +87,6 @@ exports.getGroupInfo = async (req, res) => {
         if (!group) {
             return res.status(404).json({ message: 'Group not found or you are not a member of this group.' });
         }
-
-        /*const groupMembers = await GroupMember.findAll({
-            where: { groupId: groupId },
-            include: [{
-                model: User,
-                as: 'user',
-                attributes: ['first_name', 'profile_picture']
-            }]
-        });
-        console.log(JSON.stringify(groupMembers, null, 2)); */
-
         console.log(JSON.stringify(group, null, 2));
 
         // Calculate the number of members in the group
@@ -128,6 +117,70 @@ exports.getGroupInfo = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while fetching group information' });
     }
 };
+
+
+
+//Get group overview
+exports.getGroupOverview = async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        // Fetch balance information
+        const balances = await Balance.findAll({
+            where: { groupId: groupId },
+            include: [{
+                model: User,
+                as: "user",
+                attributes: ['first_name', 'profile_picture'],
+            }],
+            attributes: ['balance'],
+        });
+
+        const memberBalances = balances.map(balance => ({
+            memberId: balance.user.id,
+            name: `${balance.user.first_name} ${balance.user.last_name}`,
+            profilePicture: balance.user.profile_picture,
+            balance: balance.balance
+        }));
+
+        // Fetch transaction information
+        const transactions = await Transaction.findAll({
+            where: { groupId: groupId },
+            include: [
+                {
+                    model: User,
+                    as: 'payer',
+                    attributes: ['id', 'first_name', 'last_name', 'profile_picture']
+                },
+                {
+                    model: User,
+                    as: 'payee',
+                    attributes: ['id', 'first_name', 'last_name', 'profile_picture'],
+                    required: false
+                }
+            ],
+            order: [['date', 'DESC']],
+        });
+
+        // Construct the response
+        const groupOverview = {
+            memberBalances: memberBalances,
+            transactions: transactions
+        };
+
+        if (!memberBalances.length && !transactions.length) {
+            return res.status(404).json({ message: 'No members, balance information, or transactions found for this group.' });
+        }
+
+        // Return the combined information
+        return res.json(groupOverview);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while fetching group overview information.' });
+    }
+};
+
+
 
 //Get group balances
 exports.getBalance = async (req, res) => {
