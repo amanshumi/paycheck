@@ -144,7 +144,7 @@ exports.getGroupOverview = async (req, res) => {
 
         const memberBalances = balances.map(balance => ({
             memberId: balance.user.id,
-            name: `${balance.user.first_name} ${balance.user.last_name}`,
+            name: `${balance.user.first_name}`,
             profilePicture: balance.user.profile_picture,
             balance: balance.balance
         }));
