@@ -19,35 +19,38 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        unique: true
+        allowNull: false,
+        unique: true,
       },
       password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       profile_picture: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       phone_number: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       },
       last_login: {
         type: Sequelize.DATE,
-        allowNull: true
+        allowNull: true,
       }
     });
   },
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Users');
   }

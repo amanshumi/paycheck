@@ -24,7 +24,33 @@ module.exports = (sequelize) => {
        User.hasMany(models.Group, {
         foreignKey: 'createdByUserId',
         as: 'createdGroups',
-        onDelete: 'SET NULL',
+        onDelete: 'CASCADE',
+      });
+
+      //User can create multiple expanses
+      User.hasMany(models.Expense,{
+        foreignKey: 'paidByUserId',
+        as: 'expenses',
+        onDelete: 'CASCADE',
+      });
+
+      //User pays money back
+      User.hasMany(models.Transaction, {
+        foreignKey: "paidByUserId",
+        as: 'paymentsMade'
+      });
+
+      //User receives money
+      User.hasMany(models.Transaction, {
+        foreignKey: "paidToUserId",
+        as: 'paymentsReceived',
+        allowNull: true
+      });
+
+      //Keep track of balances
+      User.hasMany(models.Balance, { 
+        foreignKey: 'userId', 
+        as: 'balances' 
       });
 
     }

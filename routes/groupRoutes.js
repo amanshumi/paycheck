@@ -7,11 +7,61 @@ const { body } = require('express-validator');
 const authenticateToken = require('../middleware/authenticateToken'); 
 
 //Required controllers functions
-const { getGroupsInfo  } = require('../controllers/groupController.js');
+const {
+    getGroupsInfo,
+    getGroupInfo,
+    getBalance,
+    addExpense,
+    addIncome,
+    getGroupTransactions,
+    createInviteLink,
+    joinGroupUsingToken
+  } = require('../controllers/groupController.js');
 
 const router = express.Router();
 
 // Route to get groups information
 router.get('/get-groups', authenticateToken, getGroupsInfo);
+
+// Route to get information for a specific group
+router.get('/get-group/:groupId', authenticateToken, getGroupInfo);
+
+// Route to get balance information for a group
+router.get('/get-balance/:groupId', authenticateToken, getBalance);
+
+// Route to add an expense to a group
+router.post('/add-expense/:groupId',
+  authenticateToken,
+  [
+    body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be a positive number'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('currency').notEmpty().withMessage('Currency is required'),
+  ],
+  addExpense
+);
+
+// Route to add income to a group
+router.post('/add-income/:groupId',
+  authenticateToken,
+  [
+    body('amount').isNumeric().withMessage('Amount must be a number'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('currency').notEmpty().withMessage('Currency is required'),
+  ],
+  addIncome
+);
+
+// Route to get all transactions for a specific group
+router.get('/get-transactions/:groupId', authenticateToken, getGroupTransactions);
+
+//Route for generating invite
+router.post('/generate-invite/:groupId', 
+authenticateToken, 
+createInviteLink
+);
+
+// Route for a user to join a group using an invite token
+router.post('/join-group', authenticateToken, joinGroupUsingToken);
+
 
 module.exports = router;

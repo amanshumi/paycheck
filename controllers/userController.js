@@ -72,8 +72,7 @@ exports.createGroup = async (req, res) => {
     // Automatically add creator as a member of the groups
     await GroupMember.create({
       userId: createdByUserId,
-      groupId: group.id,
-      joined_at: new Date() 
+      groupId: group.id
     }, { transaction });
 
     // Commit the transaction
@@ -91,5 +90,8 @@ exports.createGroup = async (req, res) => {
     res.status(500).json({ message: 'An error occurred while creating the group' });
   }
 };
+
+
+//Add expanse 
 
 

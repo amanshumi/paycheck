@@ -15,7 +15,27 @@ module.exports = (sequelize, DataTypes) => {
       Group.hasMany(models.GroupMember, { 
         foreignKey: 'groupId', 
         as: 'members' 
-       });
+      });
+
+      //Group can have multiple expenses
+      Group.hasMany(models.Expense, {  
+        foreignKey: 'groupId',  
+        as: 'expenses',
+        onDelete: 'CASCADE'
+      });
+
+      //Groups Transactions
+      Group.hasMany(models.Transaction, {
+        foreignKey: 'groupId',
+        as: 'transactions'
+      });
+
+      //Group Balances
+      Group.hasMany(models.Balance, { 
+        foreignKey: 'groupId', 
+        as: 'balances' 
+      });
+      
     }
   }
   Group.init({
@@ -36,6 +56,10 @@ module.exports = (sequelize, DataTypes) => {
     createdByUserId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'User',
+        key: 'id'
+      }
     },
     profile_image: {
       type: DataTypes.STRING,

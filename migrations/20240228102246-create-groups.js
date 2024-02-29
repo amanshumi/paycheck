@@ -24,6 +24,7 @@ module.exports = {
           model: 'Users',
           key: 'id'
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
       profile_image: {
@@ -31,21 +32,22 @@ module.exports = {
         allowNull: true,
       },
       currency: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(3),
         allowNull: false,
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       }
     });
   },
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Groups');
   }
