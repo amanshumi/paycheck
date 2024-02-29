@@ -425,7 +425,7 @@ exports.joinGroupUsingToken = async (req, res) => {
         // Optional: Invalidate the invite token after successful use
         // await invite.destroy();
 
-        res.json({ message: 'Successfully joined the group.', groupMember: newMember });
+        res.json({ message: 'Successfully joined the group.',  groupId: newMember.groupId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'An error occurred while joining the group.' });
