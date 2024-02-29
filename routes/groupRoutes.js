@@ -28,7 +28,7 @@ router.get('/get-groups', authenticateToken, getGroupsInfo);
 router.get('/get-group/:groupId', authenticateToken, getGroupInfo);
 
 //Route to get overview of a specific group
-router.get('/get-group/:groupId', authenticateToken, getGroupOverview);
+router.get('/get-group-overview/:groupId', authenticateToken, getGroupOverview);
 
 // Route to get balance information for a group
 router.get('/get-balance/:groupId', authenticateToken, getBalance);
