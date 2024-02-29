@@ -428,7 +428,7 @@ exports.createInviteLink = async (req, res) => {
 
     // Set an expiration time 
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
+    expiresAt.setHours(expiresAt.getHours() + 48);
 
     try {
         // Save the token with its associated group ID and expiration date in the database
