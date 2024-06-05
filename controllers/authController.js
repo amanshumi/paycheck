@@ -11,8 +11,46 @@ const crypto = require('crypto');
 
 
 //Required models
-const { User,VerificationTokens } = require('../models');
+const { User, VerificationTokens } = require('../models');
 const { PasswordResetToken } = require('../models');
+
+// Change password
+exports.changePassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const userId = req.user.id;
+
+    const getUserData = await User.findByPk(userId);
+
+    if (!getUserData) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    const passwordVerify = await bcrypt.compare(oldPassword, getUserData.dataValues.password);
+
+    if (!passwordVerify) {
+      return res.status(403).json({ error: "Old password is incorrect" })
+    }
+
+    const newHashed = await bcrypt.hash(newPassword, 8);
+
+    const updatePassword = await User.update({ password: newHashed }, {
+      where: {
+        id: userId
+      }
+    })
+
+    if (updatePassword[0] > 0) {
+      return res.status(201).json({ message: "success" })
+    }
+
+    return res.status(404).json({ error: "No data to update" })
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to change password" })
+  }
+}
 
 // Register logic
 exports.register = async (req, res) => {
@@ -76,12 +114,12 @@ exports.login = async (req, res) => {
 
     // Find the user by email
     const user = await User.findOne({ where: { email } });
-    
+
     // If user not found, return an error
     if (!user) {
       return res.status(404).json({ error: 'No account associated with this email address' });
     }
-    
+
     // Check if the provided password matches the user's password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -90,17 +128,17 @@ exports.login = async (req, res) => {
 
     // Update the user's last login date
     await user.update({ last_login: new Date() });
-    
+
     // Generate a JWT token for the user
     const token = jwt.sign(
       { id: user.id },
-      process.env.JWT_SECRET, 
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
     // Respond with a success message and the token
     res.json({ message: 'Login successful', token });
-   
+
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: 'An error occurred while trying to log in' });
@@ -140,19 +178,19 @@ exports.forgotPassword = async (req, res) => {
 
     // Setup email transporter using nodemailer
     const transporter = nodemailer.createTransport({
-      host: 'app.andreeaghelmegeanu.com', 
+      host: 'app.andreeaghelmegeanu.com',
       port: 465,
-      secure: true, 
+      secure: true,
       auth: {
-        user: 'paycheck@app.andreeaghelmegeanu.com', 
-        pass: 'Anaaremeremulte!1', 
+        user: 'paycheck@app.andreeaghelmegeanu.com',
+        pass: 'Anaaremeremulte!1',
       },
     });
 
     // Define the email's contents
-    const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`; 
+    const resetUrl = `https://app.andreeaghelmegeanu.com/reset-password/${resetToken}`;
     const mailOptions = {
-      from: '"PayCheck" <reset@paycheck.com>', 
+      from: '"PayCheck" <reset@paycheck.com>',
       to: email, // recipient
       subject: 'Password Reset Request', // Subject line
       text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n
@@ -182,38 +220,38 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ errors: errors.array() });
   }
 
   const { token, newPassword } = req.body;
 
   try {
-      // Find the token in the database
-      const passwordResetToken = await PasswordResetToken.findOne({ where: { token } });
-      if (!passwordResetToken || passwordResetToken.expires < Date.now()) {
-          return res.status(400).json({ error: 'Token is invalid or has expired.' });
-      }
-
-      // Find the user associated with the reset token
-      const user = await User.findByPk(passwordResetToken.userId);
-      if (!user) {
-          return res.status(404).json({ error: 'User not found.' });
-      }
-
-      // Hash the new password
-      const hashedNewPassword = await bcrypt.hash(newPassword, 8);
-
-      // Update the user's password
-      await user.update({ password: hashedNewPassword });
-
-      // Optionally, delete the reset token from the database to prevent reuse
-      await PasswordResetToken.destroy({ where: { id: passwordResetToken.id } });
-
-      res.json({ message: 'Password has been updated successfully.' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send({ error:'An error occurred while trying to reset the password.' });
+    // Find the token in the database
+    const passwordResetToken = await PasswordResetToken.findOne({ where: { token } });
+    if (!passwordResetToken || passwordResetToken.expires < Date.now()) {
+      return res.status(400).json({ error: 'Token is invalid or has expired.' });
     }
+
+    // Find the user associated with the reset token
+    const user = await User.findByPk(passwordResetToken.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 8);
+
+    // Update the user's password
+    await user.update({ password: hashedNewPassword });
+
+    // Optionally, delete the reset token from the database to prevent reuse
+    await PasswordResetToken.destroy({ where: { id: passwordResetToken.id } });
+
+    res.json({ message: 'Password has been updated successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: 'An error occurred while trying to reset the password.' });
+  }
 };
 
 

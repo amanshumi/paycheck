@@ -4,20 +4,21 @@ const express = require('express');
 const { body } = require('express-validator');
 
 //JWT Middleware
-const authenticateToken = require('../middleware/authenticateToken'); 
+const authenticateToken = require('../middleware/authenticateToken');
 
 //Required controllers functions
 const {
-    getGroupsInfo,
-    getGroupInfo,
-    getGroupOverview,
-    getBalance,
-    addExpense,
-    addIncome,
-    getGroupTransactions,
-    createInviteLink,
-    joinGroupUsingToken
-  } = require('../controllers/groupController.js');
+  getGroupsInfo,
+  getGroupInfo,
+  getGroupOverview,
+  getBalance,
+  addExpense,
+  addIncome,
+  getGroupTransactions,
+  createInviteLink,
+  joinGroupUsingToken,
+  getGroupMemberInfo
+} = require('../controllers/groupController.js');
 
 const router = express.Router();
 
@@ -58,10 +59,13 @@ router.post('/add-income/:groupId',
 // Route to get all transactions for a specific group
 router.get('/get-transactions/:groupId', authenticateToken, getGroupTransactions);
 
+// Route to get group member name and email
+router.get('/get-member-detail/:userId', authenticateToken, getGroupMemberInfo);
+
 //Route for generating invite
-router.post('/generate-invite/:groupId', 
-authenticateToken, 
-createInviteLink
+router.post('/generate-invite/:groupId',
+  authenticateToken,
+  createInviteLink
 );
 
 // Route for a user to join a group using an invite token

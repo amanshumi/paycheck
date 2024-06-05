@@ -9,6 +9,14 @@ const { body } = require('express-validator');
 
 const router = express.Router();
 
+const Joi = require('joi');
+const { validateRequestBody } = require('../middleware/validateRequest');
+
+const passwordSchema = Joi.object({
+  oldPassword: Joi.string().required(),
+  newPassword: Joi.string().required(),
+});
+
 
 //Register EndPoint
 router.post("/register", [
@@ -24,15 +32,18 @@ router.post('/login', [
   body('password').not().isEmpty().withMessage('Password is required')
 ], authController.login);
 
+// Change password endpoint
+router.put('/change-password', authenticateToken, validateRequestBody(passwordSchema), authController.changePassword);
+
 // Forgot Password endpoint
 router.post('/forgot-password', [
-    body('email').isEmail().withMessage('Must be a valid email address')
+  body('email').isEmail().withMessage('Must be a valid email address')
 ], authController.forgotPassword);
 
 //Change password 
 router.post('/reset-password', [
-    body('token').not().isEmpty().withMessage('Reset token is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+  body('token').not().isEmpty().withMessage('Reset token is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 ], authController.resetPassword);
 
 

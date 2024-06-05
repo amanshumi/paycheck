@@ -5,10 +5,10 @@ const express = require('express');
 const { body } = require('express-validator');
 
 //Required controllers functions
-const { getUserInfo,createGroup  } = require('../controllers/userController');
+const { getUserInfo, createGroup } = require('../controllers/userController');
 
 //JWT Middleware
-const authenticateToken = require('../middleware/authenticateToken'); 
+const authenticateToken = require('../middleware/authenticateToken');
 
 const router = express.Router();
 

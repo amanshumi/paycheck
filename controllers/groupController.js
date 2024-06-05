@@ -7,23 +7,51 @@ const crypto = require('crypto');
 
 //Utils
 const saveInviteToken = require('../utils/saveInviteToken');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 //Required packages
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
- 
+
 
 //DB
 const { sequelize } = require('../models');
 
 //Required models
-const {User,Group,GroupMember,Balance,Expense,Transaction,GroupInvite} = require('../models');
+const { User, Group, GroupMember, Balance, Expense, Transaction, GroupInvite } = require('../models');
+
+exports.getGroupMemberInfo = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const memberData = await GroupMember.findOne({
+            where: {
+                userId: userId
+            },
+            attributes: {
+                exclude: ["groupId"]
+            },
+            include: [
+                { model: Group, as: "group", attributes: ["name"] },
+                { model: User, as: "user", attributes: ["first_name", "last_name", "email"] }
+            ]
+        });
+
+        if (!memberData) {
+            return res.status(404).json({ error: "user is not a member of any group" })
+        }
+
+        return res.status(200).json({ message: "success", data: memberData })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Error occurred while fetching group member info" })
+    }
+}
 
 //Get group information
-exports.getGroupsInfo = async (req,res) => {
+exports.getGroupsInfo = async (req, res) => {
 
-    try{
+    try {
         //Get the user id from token
         const userId = req.user.id;
 
@@ -36,15 +64,15 @@ exports.getGroupsInfo = async (req,res) => {
                 attributes: []
             }],
             attributes: [
-                'id', 
+                'id',
                 'name'
             ],
             group: ['Group.id'],
             raw: true
         });
 
-         // If no groups found, return a message
-         if (!groups.length) {
+        // If no groups found, return a message
+        if (!groups.length) {
             return res.status(404).json({ message: 'No groups found for this user.' });
         }
 
@@ -57,8 +85,7 @@ exports.getGroupsInfo = async (req,res) => {
 
         //Return JSON
         res.json(groups);
-    }catch (error)
-    {
+    } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'An error occurred while fetching groups information' });
     }
@@ -69,8 +96,8 @@ exports.getGroupsInfo = async (req,res) => {
 // Get specific group information
 exports.getGroupInfo = async (req, res) => {
     // Get the info from request
-    const { groupId } = req.params; 
-    const userId = req.user.id; 
+    const { groupId } = req.params;
+    const userId = req.user.id;
 
     try {
         // Find the group by id and check if the user is a member
@@ -201,7 +228,7 @@ exports.getBalance = async (req, res) => {
             include: [{
                 model: User,
                 as: "user",
-                attributes: ['first_name','profile_picture'],
+                attributes: ['first_name', 'profile_picture'],
             }],
             attributes: ['balance'],
         });
@@ -220,7 +247,7 @@ exports.getBalance = async (req, res) => {
 
         //Retun the info
         return res.json(memberBalances);
-    } catch (error){
+    } catch (error) {
 
         console.error(error);
         res.status(500).json({ message: 'An error occurred while fetching balance information' });
@@ -256,12 +283,12 @@ exports.addExpense = async (req, res) => {
         const expense = await Expense.create({
             description,
             amount: numericAmount,
-            currency: currency, 
+            currency: currency,
             paidByUserId: userId,
             groupId,
-            date: date || new Date(), 
+            date: date || new Date(),
         }, { transaction: t });
-    
+
         //Get all members
         const members = await GroupMember.findAll({ where: { groupId } });
 
@@ -272,7 +299,7 @@ exports.addExpense = async (req, res) => {
                 // Default balance if not existing
                 defaults: {
                     //Prima data,, ii face cu minus
-                    balance: -numericAmount, 
+                    balance: -numericAmount,
                     userId: member.userId,
                     groupId
                 },
@@ -291,7 +318,7 @@ exports.addExpense = async (req, res) => {
         await Transaction.create({
             description: `Expense: ${description}`,
             // Negative because it's an expense
-            amount: -numericAmount, 
+            amount: -numericAmount,
             currency: currency,
             paidByUserId: userId,
             groupId,
@@ -342,7 +369,7 @@ exports.addIncome = async (req, res) => {
         await Transaction.create({
             description: `Income: ${description}`,
             // Positive because it's an income
-            amount: numericAmount, 
+            amount: numericAmount,
             currency: currency,
             paidByUserId: userId,
             paidToUserId: null,
@@ -355,22 +382,22 @@ exports.addIncome = async (req, res) => {
         // Update balances for all group members
         await Promise.all(members.map(async (member) => {
             await Balance.update({
-                balance: sequelize.literal(`balance + ${numericAmount / members.length}`) 
+                balance: sequelize.literal(`balance + ${numericAmount / members.length}`)
             }, {
                 where: { userId: member.userId, groupId },
                 transaction: t
             });
         }));
 
-         // Commit the transaction
-         await t.commit();
+        // Commit the transaction
+        await t.commit();
     } catch (error) {
-         // Rollback the transaction in case of error
-         if (t.finished !== 'commit') {
+        // Rollback the transaction in case of error
+        if (t.finished !== 'commit') {
             await t.rollback();
         }
-         console.error(error);
-         res.status(500).json({ message: "An error occurred while adding the expense." });
+        console.error(error);
+        res.status(500).json({ message: "An error occurred while adding the expense." });
     }
 
     if (t.finished === 'commit') {
@@ -421,7 +448,7 @@ exports.getGroupTransactions = async (req, res) => {
 
 //Create GroupInvite Link
 exports.createInviteLink = async (req, res) => {
-    const { groupId } = req.params; 
+    const { groupId } = req.params;
 
     // Generate a unique token
     const token = crypto.randomBytes(20).toString('hex');
@@ -484,7 +511,7 @@ exports.joinGroupUsingToken = async (req, res) => {
         // Optional: Invalidate the invite token after successful use
         // await invite.destroy();
 
-        res.json({ message: 'Successfully joined the group.',  groupId: newMember.groupId });
+        res.json({ message: 'Successfully joined the group.', groupId: newMember.groupId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'An error occurred while joining the group.' });
