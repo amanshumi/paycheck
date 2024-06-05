@@ -33,6 +33,10 @@ exports.changePassword = async (req, res) => {
       return res.status(403).json({ error: "Old password is incorrect" })
     }
 
+    if (oldPassword === newPassword) {
+      return res.status(403).json({ error: "You can't reuse your old password" })
+    }
+
     const newHashed = await bcrypt.hash(newPassword, 8);
 
     const updatePassword = await User.update({ password: newHashed }, {
